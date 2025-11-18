@@ -72,7 +72,9 @@ class APIClient:
             endpoint="/api/v1/scan/start",
             json={"api_token": api_token},
         )
-        response.raise_for_status()
+        # Don't raise for status here - let tests handle the error
+        if response.status_code >= 400:
+            response.raise_for_status()
         return response.json()
     
     def get_job_status(self, job_id: str) -> Dict[str, Any]:

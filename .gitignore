@@ -33,6 +33,10 @@ htmlcov/
 .tox/
 .hypothesis/
 
+# Database
+*.sqlite3
+*.db
+
 # IDE
 .vscode/
 .idea/

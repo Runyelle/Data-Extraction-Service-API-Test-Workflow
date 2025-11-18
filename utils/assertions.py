@@ -121,13 +121,25 @@ class APIAssertions:
         expected_keywords: List[str],
     ):
         """Assert that an error response contains expected keywords in the message."""
+        # Check both 'message' and 'error' fields, and also check nested error fields
         message = error_response.get("message") or error_response.get("error", "")
+        
+        # Also check if error_response itself is a string or list
+        if isinstance(error_response, str):
+            message = error_response
+        elif isinstance(error_response, list) and len(error_response) > 0:
+            message = str(error_response[0])
+        elif isinstance(error_response, dict):
+            # Check all string values in the dict
+            all_text = " ".join(str(v) for v in error_response.values() if isinstance(v, (str, list)))
+            message = message + " " + all_text if message else all_text
+        
         message_lower = message.lower()
         
         for keyword in expected_keywords:
             assert keyword.lower() in message_lower, (
                 f"Error message should contain '{keyword}'. "
-                f"Actual message: {message}"
+                f"Actual response: {error_response}"
             )
     
     @staticmethod

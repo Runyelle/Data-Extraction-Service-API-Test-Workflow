@@ -1,32 +1,41 @@
-# Data Extraction Service: API Test Workflow
+# Data Extraction Service: Django REST API
 
-This repository contains a comprehensive test suite for the Data Extraction Service API, implementing the testing workflows for validating API behavior, data extraction functionality, and error handling.
+A complete Django REST Framework API for extracting data from third-party services, featuring comprehensive test suite, Swagger UI documentation, and production-ready code following Django best practices.
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Quick Start Guide](#quick-start-guide)
-3. [Installation](#installation)
-4. [Configuration](#configuration)
-5. [Running Tests](#running-tests)
-6. [Troubleshooting](#troubleshooting)
+2. [Features](#features)
+3. [Quick Start Guide](#quick-start-guide)
+4. [Installation](#installation)
+5. [Configuration](#configuration)
+6. [Running the Server](#running-the-server)
+7. [API Documentation](#api-documentation)
+8. [Running Tests](#running-tests)
+9. [Project Structure](#project-structure)
 
 ---
 
 ## Overview
 
-The test suite includes three main categories of tests:
+This project provides a complete Django REST Framework implementation of a Data Extraction Service API. It includes:
 
-1. **Seeded Data Tests** - Fast, deterministic tests using pre-populated database data
-2. **Real Extraction Tests** - End-to-end tests using actual API tokens
-3. **Edge Case Tests** - Tests for error handling and boundary conditions
+- **Django REST API** - Full implementation of all endpoints
+- **PostgreSQL Database** - For storing jobs and extracted records
+- **Swagger UI Documentation** - Interactive API documentation
+- **Comprehensive Test Suite** - Automated tests for all endpoints
+- **Background Job Processing** - Asynchronous data extraction
 
-### Prerequisites
+## Features
 
-- Python 3.8 or higher
-- Access to the Data Extraction Service API
-- (Optional) Database access for seeded data tests
-- (Optional) Valid service provided API token for real extraction tests
+- ✅ RESTful API endpoints for data extraction
+- ✅ Job status tracking and management
+- ✅ Pagination support
+- ✅ Error handling and validation
+- ✅ Swagger/OpenAPI documentation
+- ✅ Comprehensive test coverage
+- ✅ Database migrations
+- ✅ Admin interface
 
 ---
 
@@ -34,32 +43,39 @@ The test suite includes three main categories of tests:
 
 ### What You Need
 
-Before running the tests, you need to setup the following in your .env file:
+Before running the project, you need to configure the following in your `.env` file:
 
-1. **API_BASE_URL** — **REQUIRED**
-   - This is the base URL where your Data Extraction Service API is running
-   - Examples: 
-     - `http://localhost:8000` (if running locally)
-     - or (if running on a remote server)
-   -You must set for tests to work
+1. **Database Configuration** — **REQUIRED**
+   - PostgreSQL database credentials
+   - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
 
-2. **SERVICE_PROVIDED_API_TOKEN** — **OPTIONAL** (but recommended)
-   - This is the API token for the third-party service you're extracting data from
+2. **Django Settings** — **REQUIRED**
+   - `SECRET_KEY` - Django secret key
+   - `DEBUG` - Set to `True` for development
+
+3. **SERVICE_PROVIDED_API_TOKEN** — **OPTIONAL** (for tests)
+   - API token for the third-party service
    - Only needed for real extraction tests
-   - Tests will skip real extraction tests if not provided
-   - Should be configured in `.env` file
 
 ---
 
 ## Installation
 
-1. Clone this repository:
+### Prerequisites
+
+- Python 3.8 or higher
+- PostgreSQL database
+- pip (Python package manager)
+
+### Step 1: Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd Data-Extraction-Service-API-Test-Workflow
 ```
 
-2. Create a virtual environment (recommended):
+### Step 2: Create Virtual Environment
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # On macOS/Linux
@@ -67,9 +83,31 @@ source venv/bin/activate  # On macOS/Linux
 venv\Scripts\activate    # On Windows
 ```
 
-3. Install dependencies:
+### Step 3: Install Dependencies
+
 ```bash
 pip install -r requirements.txt
+```
+
+### Step 4: Set Up Database
+
+1. Create a PostgreSQL database:
+```bash
+createdb extraction_db
+```
+
+2. Configure database credentials in `.env` file (see Configuration section)
+
+### Step 5: Run Migrations
+
+```bash
+python manage.py migrate
+```
+
+### Step 6: Create Superuser (Optional)
+
+```bash
+python manage.py createsuperuser
 ```
 
 ---
@@ -85,22 +123,96 @@ cp env.example .env
 
 ### Required Configuration
 
-- **`API_BASE_URL`** - **REQUIRED** - Base URL of the Data Extraction Service API
-  - This tells the tests where to find your API server
-  - Example: `http://localhost:8000` (if API runs locally)
-  - Example: `https://staging-api.example.com` (if API runs on remote server)
-  - **You must set this** - tests will fail without it
-- **`SERVICE_PROVIDED_API_TOKEN` - API token for the third-party service
-  - This is the token for the external service you're extracting data from
-  - Only needed for real extraction tests
-  - Real extraction tests will be skipped if not provided
-  - Example: `pat-na2-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-- **Database credentials** (for seeded data tests only):
-  - `DB_HOST`
-  - `DB_PORT` (default: 5432)
-  - `DB_NAME`
-  - `DB_USER`
-  - `DB_PASSWORD`
+- **`SECRET_KEY`** - Django secret key (generate a new one for production)
+- **`DEBUG`** - Set to `True` for development, `False` for production
+- **`ALLOWED_HOSTS`** - Comma-separated list of allowed hosts
+- **`DB_HOST`** - Database hostname (default: `localhost`)
+- **`DB_PORT`** - Database port (default: `5432`)
+- **`DB_NAME`** - Database name (default: `extraction_db`)
+- **`DB_USER`** - Database username (default: `postgres`)
+- **`DB_PASSWORD`** - Database password
+
+### Optional Configuration
+
+- **`SERVICE_PROVIDED_API_TOKEN`** - API token for third-party service (for tests)
+- **`API_BASE_URL`** - Base URL for API (default: `http://localhost:8000`)
+
+---
+
+## Running the Server
+
+### Development Server
+
+```bash
+python manage.py runserver
+```
+
+The API will be available at: `http://localhost:8000`
+
+### Production Deployment
+
+For production, use a WSGI server like Gunicorn:
+
+```bash
+pip install gunicorn
+gunicorn data_extraction_service.wsgi:application --bind 0.0.0.0:8000
+```
+
+---
+
+## API Documentation
+
+### Swagger UI Setup
+
+This project includes **Swagger UI** for interactive API documentation. The Swagger UI is automatically configured and available once the server is running.
+
+**Access the API Documentation:**
+
+1. Start the Django server:
+   ```bash
+   python manage.py runserver
+   ```
+
+2. Open your browser and navigate to:
+   - **Swagger UI**: http://localhost:8000/swagger/
+   - **ReDoc**: http://localhost:8000/redoc/
+   - **OpenAPI JSON Schema**: http://localhost:8000/swagger.json
+
+**Features:**
+- Interactive API testing directly from the browser
+- Complete endpoint documentation with request/response schemas
+- Try-it-out functionality for all endpoints
+- Authentication examples
+- Response examples and error codes
+
+The Swagger UI is configured using `drf-yasg` and automatically documents all API endpoints defined in the `extraction` app.
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/health` | GET | Health check |
+| `/api/v1/scan/start` | POST | Start a new extraction job |
+| `/api/v1/scan/status/<job_id>` | GET | Get job status |
+| `/api/v1/scan/result/<job_id>` | GET | Get extraction results |
+| `/api/v1/scan/cancel/<job_id>` | POST | Cancel a job |
+| `/api/v1/scan/remove/<job_id>` | DELETE | Remove job data |
+| `/api/v1/jobs/jobs` | GET | List all jobs |
+| `/api/v1/jobs/statistics` | GET | Get job statistics |
+
+### Example API Request
+
+**Start Extraction:**
+```bash
+curl -X POST http://localhost:8000/api/v1/scan/start \
+  -H "Content-Type: application/json" \
+  -d '{"api_token": "your-token-here"}'
+```
+
+**Get Job Status:**
+```bash
+curl http://localhost:8000/api/v1/scan/status/<job_id>
+```
 
 ---
 
@@ -113,7 +225,7 @@ pytest -v
 
 ### Run Specific Test Suites
 
-**Edge Case Tests (Recommended to start here - fastest):**
+**Edge Case Tests:**
 ```bash
 pytest tests/test_edge_cases.py -v
 ```
@@ -133,63 +245,113 @@ pytest tests/test_real_extraction.py -v
 pytest -v --log-cli-level=INFO
 ```
 
-### Run a Specific Test
-```bash
-pytest tests/test_edge_cases.py::TestEdgeCases::test_health_check -v
+---
+
+## Project Structure
+
+```
+.
+├── data_extraction_service/    # Django project settings
+│   ├── settings.py            # Django settings
+│   ├── urls.py                # Main URL configuration
+│   ├── wsgi.py                # WSGI configuration
+│   └── asgi.py                # ASGI configuration
+├── extraction/                 # Extraction app
+│   ├── models.py              # Database models
+│   ├── views.py               # API views
+│   ├── serializers.py         # DRF serializers
+│   ├── services.py            # Business logic
+│   ├── urls.py                # App URLs
+│   └── admin.py               # Admin configuration
+├── tests/                      # Test suite
+│   ├── test_edge_cases.py
+│   ├── test_real_extraction.py
+│   └── test_seeded_data.py
+├── utils/                      # Utility modules
+│   ├── api_client.py
+│   ├── assertions.py
+│   └── database_seeder.py
+├── manage.py                   # Django management script
+├── requirements.txt            # Python dependencies
+├── env.example                 # Environment variables template
+└── README.md                   # This file
 ```
 
-### Common Commands
+---
 
-- **Stop on first failure**: `pytest -x`
-- **Show print statements**: `pytest -s`
-- **Run in parallel**: `pytest -n auto`
+## Database Models
+
+### ExtractionJob
+- `job_id` (UUID, Primary Key)
+- `connection_id` (UUID)
+- `status` (pending, in_progress, completed, failed, cancelled)
+- `record_count` (Integer)
+- `start_time`, `end_time` (DateTime)
+- `error_message` (Text, optional)
+
+### ExtractionRecord
+- `id` (AutoField, Primary Key)
+- `job` (ForeignKey to ExtractionJob)
+- `email`, `first_name`, `last_name` (CharField)
+- `id_from_service` (CharField)
+- `created_at` (DateTime)
+
+---
+
+## Admin Interface
+
+Access the Django admin interface at: `http://localhost:8000/admin/`
+
+Login with the superuser credentials created during setup.
 
 ---
 
 ## Troubleshooting
 
-### Connection Refused Error
+### Database Connection Error
 
-**Error**: `ConnectionRefusedError: [Errno 61] Connection refused`
+If you encounter database connection errors:
 
-**Solution**: The API server is not running or not accessible at the configured `API_BASE_URL`.
+1. Verify PostgreSQL is running: `pg_isready`
+2. Check database credentials in `.env`
+3. Ensure database exists: `createdb extraction_db`
 
-1. Verify your API is running: `curl http://localhost:8000/api/v1/health`
-2. Update `API_BASE_URL` in `.env` if the API is running elsewhere
-3. Start the API server if it should be running locally
+### Migration Errors
 
-### Missing Service Provided Token
-
-If real extraction tests are being skipped:
-- Ensure `SERVICE_PROVIDED_API_TOKEN` is set in `.env`
-- Verify the token is valid and has necessary permissions
-
-### Module Not Found Error
+If migrations fail:
 
 ```bash
-pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-### Test Timeouts
+### Port Already in Use
 
-If tests are timing out:
-1. Increase `API_TIMEOUT` in `.env`
-2. Increase `MAX_POLL_ATTEMPTS` for long-running extractions
+If port 8000 is already in use:
+
+```bash
+python manage.py runserver 8001
+```
 
 ---
 
 ## Summary
 
-**What You Need:**
-1. **API_BASE_URL** (REQUIRED) - The URL where your Data Extraction Service API is running
-2. **SERVICE_PROVIDED_API_TOKEN** (OPTIONAL) - The API token for the third-party service
-
 **Quick Setup:**
 1. Install dependencies: `pip install -r requirements.txt`
 2. Copy `env.example` to `.env`: `cp env.example .env`
-3. Edit `.env` and set:
-   - `API_BASE_URL=http://your-api-url-here` (REQUIRED)
-   - `SERVICE_PROVIDED_API_TOKEN=your-token-here` (OPTIONAL)
-4. Run tests: `pytest -v`
+3. Configure database credentials in `.env`
+4. Run migrations: `python manage.py migrate`
+5. Start server: `python manage.py runserver`
+6. Access API documentation: http://localhost:8000/swagger/
 
-That's it! Just plug in your API URL and (optionally) your token, and you're ready to run tests.
+**What's Included:**
+- ✅ Complete Django REST Framework API
+- ✅ PostgreSQL database integration
+- ✅ Swagger UI API documentation (configured and ready)
+- ✅ Comprehensive test suite
+- ✅ Environment configuration template (`.env.example`)
+- ✅ Admin interface
+- ✅ Background job processing
+
+That's it! Your Django API is ready to use. All endpoints are documented in Swagger UI.
